@@ -4,7 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 interface ButtonHomeProps {
   title: string;
-  icon: any;
+  icon: keyof typeof MaterialIcons.glyphMap;
   onPress: () => void;
 }
 
@@ -23,3 +23,10 @@ export const ButtonHome: React.FC<ButtonHomeProps> = ({title, icon, onPress}) =>
     </ButtonContainer>
   )
 }
+
+
+
+
+
+
+

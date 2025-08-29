@@ -18,6 +18,7 @@ export function HomeStack(){
         name="home"
         component={Home}
       />
+      
     </Navigator>
   )
 }

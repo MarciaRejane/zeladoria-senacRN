@@ -3,12 +3,12 @@ import { Animated, TouchableOpacity } from "react-native";
 
 export const Container = styled.View`
   flex: 1;
-  background-color: ${({theme}) => theme.COLORS.WHITE};
+  background-color: ${({ theme }) => theme.COLORS.WHITE};
 `;
 
 export const AnimatedHeader = styled(Animated.View)`
   position: absolute;
-  top:0;
+  top: 0;
   width: 100%;
   justify-content: center;
   align-items: center;
@@ -20,9 +20,16 @@ export const Logo = styled.Image`
   height: 360px;
 `;
 
+export const ViewWhate = styled.View`
+  width: 100%;
+  margin-top: 20px;
+  align-items: center;
+`;
+
 export const ButtonWrapper = styled.View`
   flex-direction: row;
   justify-content: center;
-  margin-top: 20px;
-  gap: 20px;
+  flex-wrap: wrap; 
+  gap: 15px;
+  margin-top: 10px;
 `;

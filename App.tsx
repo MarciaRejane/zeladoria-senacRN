@@ -5,7 +5,7 @@ import { useFonts, Quicksand_400Regular, Quicksand_500Medium, Quicksand_700Bold 
 
 import theme from './src/theme';
 import {Routes} from "./src/Routes"
-import  {Loading } from '@components/Loading';
+import  {Loading } from './src/components/Loading';
 
 export default function App() {
   const [ fontsLoaded ] = useFonts({ Quicksand_400Regular, Quicksand_500Medium, Quicksand_700Bold })

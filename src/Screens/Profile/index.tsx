@@ -8,7 +8,7 @@ export  function Profile() {
         <Container>
             <Header 
              title="Profile"
-             backButton={true} 
+            //   backButton={true} 
              />
             
         </Container>
