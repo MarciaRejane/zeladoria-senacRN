@@ -64,9 +64,7 @@ export function UserListScreen({ navigation }: UserListScreenProps) {
 
   return (
     <Container>
-      <Header
-        title="Gerencia Usuários" showBackButton={true}
-      />
+
 
       <View>
         <FilterButton onPress={() => setActiveFilter('all')}>
