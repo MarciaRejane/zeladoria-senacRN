@@ -1,66 +1,118 @@
-import React, { useState } from 'react';
-import { FlatList } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useState, useEffect, useCallback } from "react";
+import { Alert, ActivityIndicator, FlatList } from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../App";
+import {
+    Container,
+    FilterButton,
+    FilterText,
+    ViewFilter,
+    CreateButton,
+    TitleCreate,
+    Content,
+} from "./styles";
+import { salas, Sala } from "../../services/api";
+import { RoomItem } from "../../components/RoomItem";
+import { useFocusEffect } from "@react-navigation/native";
+import theme from "../../theme";
 
-import { AppStackParamList } from '../../Routes/app.routes';
-import { Header } from '../../components/Header';
-import { RoomCard } from '../../components/RoomCard';
+type RoomsScreenProps = NativeStackScreenProps<RootStackParamList, "Rooms">;
 
-import { Container, Content, FilterContainer, FilterButton, FilterText } from './styles';
+export function RoomsScreen({ navigation, route }: RoomsScreenProps) {
+    const [loading, setLoading] = useState(true);
+    const [salasData, setSalasData] = useState<Sala[]>([]);
+    const [filteredSalas, setFilteredSalas] = useState<Sala[]>([]);
+    const [activeFilter, setActiveFilter] = useState<"all" | "clean" | "pending">(
+        "all"
+    );
 
-const DUMMY_ROOMS = [
-  { id: '1', title: 'Sala 01, Auditório Principal', description: 'Andar térreo', status: 'Limpa' as const },
-  { id: '2', title: 'Sala 02, Laboratório I', description: 'Longa duração', status: 'Pendente' as const },
-  { id: '3', title: 'Sala 03, Biblioteca', description: 'Andar superior', status: 'Limpa' as const },
-];
+    const handleSalaDeleted = (deletedSalaId: number) => {
+        const updatedSalas = salasData.filter((sala) => sala.id !== deletedSalaId);
+        setSalasData(updatedSalas);
+    };
 
-type RoomsNavigationProp = NativeStackNavigationProp<AppStackParamList>;
+    const fetchSalas = async () => {
+        setLoading(true);
+        try {
+            const response = await salas.list();
+            setSalasData(response.data);
+        } catch (error) {
+            console.error("Erro ao carregar salas:", error);
+            Alert.alert("Erro", "Não foi possível carregar a lista de salas.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-export function Rooms() {
-  const [activeFilter, setActiveFilter] = useState<'Geral' | 'Limpas' | 'Pendentes'>('Geral');
-  const navigation = useNavigation<RoomsNavigationProp>();
+    useFocusEffect(
+        useCallback(() => {
+            fetchSalas();
+        }, [])
+    );
 
-  const filteredRooms = DUMMY_ROOMS.filter(room => {
-    if (activeFilter === 'Geral') return true;
-    if (activeFilter === 'Limpas') return room.status === 'Limpa';
-    return room.status === 'Pendente';
-  });
+    // Atualiza as salas filtradas com base no filtro ativo
+    useEffect(() => {
+        let list = salasData;
+        if (activeFilter === "clean") {
+            list = salasData.filter((sala) => sala.status_limpeza === "Limpa");
+        } else if (activeFilter === "pending") {
+            list = salasData.filter(
+                (sala) => sala.status_limpeza === "Limpeza Pendente"
+            );
+        }
+        setFilteredSalas(list);
+    }, [activeFilter, salasData]);
 
-  function handleOpenRoomDetails(roomId: string) {
-    navigation.navigate('roomDetails', { roomId });
-  }
+    if (loading) {
+        return (
+            <Container style={{ justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size="large" color={theme.COLORS.MIDNIGHT_BLUE} />
+            </Container>
+        );
+    }
 
-  return (
-    <Container>
-      <Header title="Salas" />
-      <Content>
-        <FilterContainer>
-          <FilterButton isActive={activeFilter === 'Geral'} onPress={() => setActiveFilter('Geral')}>
-            <FilterText isActive={activeFilter === 'Geral'}>Geral</FilterText>
-          </FilterButton>
-          <FilterButton isActive={activeFilter === 'Limpas'} onPress={() => setActiveFilter('Limpas')}>
-            <FilterText isActive={activeFilter === 'Limpas'}>Limpas</FilterText>
-          </FilterButton>
-          <FilterButton isActive={activeFilter === 'Pendentes'} onPress={() => setActiveFilter('Pendentes')}>
-            <FilterText isActive={activeFilter === 'Pendentes'}>Pendentes</FilterText>
-          </FilterButton>
-        </FilterContainer>
+    const { user } = route.params;
+    // Define se o usuário é administrador
+    const isAdmin = user?.is_staff || user?.is_superuser;
 
-        <FlatList 
-          data={filteredRooms}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <RoomCard 
-              title={item.title}
-              description={item.description}
-              status={item.status}
-              onPress={() => handleOpenRoomDetails(item.id)}
-            />
-          )}
-          showsVerticalScrollIndicator={false}
-        />
-      </Content>
-    </Container>
-  );
+    return (
+        <Container>
+            <Content>
+
+                <ViewFilter>
+                    <FilterButton isActive={activeFilter === "all"} onPress={() => setActiveFilter("all")}>
+                        <FilterText isActive={activeFilter === "all"}>Todas</FilterText>
+                    </FilterButton>
+                    <FilterButton isActive={activeFilter === "clean"} onPress={() => setActiveFilter("clean")}>
+                        <FilterText isActive={activeFilter === "clean"}>
+                            Salas Limpas
+                        </FilterText>
+                    </FilterButton>
+                    <FilterButton isActive={activeFilter === "pending"} onPress={() => setActiveFilter("pending")}>
+                        <FilterText isActive={activeFilter === "pending"}>
+                            Salas Pendentes
+                        </FilterText>
+                    </FilterButton>
+                </ViewFilter>
+
+                {isAdmin && (
+                    <CreateButton onPress={() => navigation.navigate("CreateRoomScreen")}>
+                        <TitleCreate>Criar Nova Sala</TitleCreate>
+                    </CreateButton>
+                )}
+
+                <FlatList
+                    data={filteredSalas}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                        <RoomItem
+                            room={item}
+                            user={user}
+                            onDeleteSuccess={handleSalaDeleted}
+                        />
+                    )}
+                />
+            </Content>
+        </Container>
+    );
 }
