@@ -8,12 +8,13 @@ interface RoomStatusProps {
 export const Container = styled.TouchableOpacity`
   background-color: ${({ theme }) => theme.COLORS.WHITE};
   margin-bottom: 20px;
-  width: 100%;
+  width: 95%;
+  max-width: 370px;
   border-radius: 10px;
   padding: 20px;
   justify-content: center;
   border-width: 1px;
-  border-color: ${({ theme }) => theme.COLORS.LIGHT_GRAY};
+  border-color: ${({ theme }) => theme.COLORS.MIDNIGHT_BLUE};
 `;
 
 export const RoomHeader = styled.View`
@@ -24,13 +25,15 @@ export const RoomHeader = styled.View`
 
 export const RoomName = styled.Text`
   font-size: 18px;
-  font-weight: bold;
-  color: ${({ theme }) => theme.COLORS.LIGHTER_DARK_BLUE};
+  font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
+  color: ${({ theme }) => theme.COLORS.DARK_BLUE};
+  flex-wrap: wrap;
+  max-width: 60%;
 `;
 
 export const RoomStatus = styled.Text<RoomStatusProps>`
   font-size: 16px;
-  font-weight: bold;
+  font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
   color: ${(props) =>
     props.status === "Limpa"
       ? theme.COLORS.TEAL_GREEN
@@ -41,7 +44,7 @@ export const DetailsContainer = styled.View`
   margin-top: 10px;
   padding-top: 10px;
   border-top-width: 1px;
-  border-top-color: ${({ theme }) => theme.COLORS.MIDNIGHT_BLUE};
+  border-top-color: ${({ theme }) => theme.COLORS.LIGHT_GRAY};
 `;
 
 export const DetailText = styled.Text`
@@ -60,7 +63,7 @@ export const CleanButton = styled.TouchableOpacity`
 
 export const CleanButtonText = styled.Text`
   color: ${({ theme }) => theme.COLORS.WHITE};
-  font-weight: bold;
+  font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
 `;
 
 export const DeleteButton = styled.TouchableOpacity`
@@ -74,5 +77,5 @@ export const DeleteButton = styled.TouchableOpacity`
 export const DeleteButtonText = styled.Text`
   color: ${({ theme }) => theme.COLORS.WHITE};
   font-size: 16px;
-  font-weight: bold;
+  font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
 `;
