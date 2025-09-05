@@ -11,6 +11,7 @@ export default {
     LIGHTER_DARK_BLUE: "#7DA4C6",//azul claro
     DEEP_TEAL: "#06777F",//Verde
     VIBRANT_RED: "#FC4629",//vermelho
+    ICE_BLUE: "#EFF7FF",
 
     PURPLE: "#9804DD",
 
