@@ -1,59 +1,83 @@
 import React, { useState } from "react";
-import { useTheme } from "styled-components/native";
-import { Container, ViewGray, ViewWhate, ImagemSenac, TitleLogin, Contant} from "./styles";
-
-
+import { Container, ViewGray, ViewWhate, ImagemSenac, TitleLogin, Contant } from "./styles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { accounts, LoginResponse } from "../../services/api";
+import { RootStackParamList } from "../../../App";
+import theme from "../../theme";
+import { ThemeProvider } from "styled-components/native";
 import { Input } from "../../components/Inputs";
 import { ButtonLogin } from "../../components/ButtonLogin";
+import { Alert } from "react-native";
 
-export  function Login() {
 
-    function handleLogin() {
-  console.log("Email:", email);
-  console.log("Senha:", password);
+type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
-}
-    const theme = useTheme();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    return(
-        <Container>
+export function LoginScreen({ navigation }: LoginScreenProps) {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState(false);
 
-          <ViewGray>
-             <ImagemSenac
-                source={require('../../assets/Logo-senac.png')}
-                />
-          </ViewGray>
-                <Contant>
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await accounts.login(username, password);
+      const { token, user_data }: LoginResponse = response.data;
+
+      await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('userData', JSON.stringify(user_data));
+
+      navigation.replace('Home', { user: user_data });//substitui a tela atual pela home.
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro de login', 'Nome de usuário ou senha incorretos.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ThemeProvider theme={theme}>
+
+      <Container>
+        <ViewGray>
+          <ImagemSenac
+            source={require('../../assets/Logo-senac.png')}
+          />
+        </ViewGray>
+        <Contant>
           <ViewWhate>
             <TitleLogin>Login</TitleLogin>
             <Input
-              placeholder="Email"
-              placeholderTextColor= {theme.COLORS.DARK_BLUE}
-              value={email}
-              onChangeText={setEmail}
+              placeholder="Usuário"
+              placeholderTextColor={theme.COLORS.DARK_BLUE}
+              value={username}
+              onChangeText={setUsername}
               keyboardType="email-address"
               autoCapitalize="none"
             />
 
             <Input
               placeholder="Senha"
-              placeholderTextColor= {theme.COLORS.DARK_BLUE}
+              placeholderTextColor={theme.COLORS.DARK_BLUE}
+              secureTextEntry={true}
               value={password}
               onChangeText={setPassword}
-              secureTextEntry
             />
 
             <ButtonLogin
-              title="Entrar"
+              title={loading ? "carregando..." : "Entrar"}
               onPress={handleLogin}
             />
 
           </ViewWhate>
-                </Contant>    
-        </Container>
-    );
-}
+        </Contant>
+      </Container>
+    </ThemeProvider>
+  );
+};
+
 
 
 
