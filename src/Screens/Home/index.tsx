@@ -1,67 +1,83 @@
-import React, { useRef } from "react";
-import { Animated, Dimensions } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Container, ButtonWrapper, ViewWhate } from "./styles";
 import { useTheme } from "styled-components/native";
-import { useNavigation } from "@react-navigation/native";
-import { Container, AnimatedHeader, Logo, ButtonWrapper, ViewWhate } from "./styles";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RootStackParamList } from "../../../App";
+import { RouteProp } from "@react-navigation/native";
+import { User } from "../../services/api";
 import { ButtonHome } from "../../components/ButtonHome";
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const MAX_HEADER_HEIGHT = 350;
-const MIN_HEADER_HEIGHT = 100;
+import { Header } from "../../components/Header";
 
-export function Home() {
-    const theme = useTheme();
-    const scrollY = useRef(new Animated.Value(0)).current;
-    const navigation = useNavigation<any>();
+type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
+type HomeScreenRouteProp = RouteProp<RootStackParamList, "Home">;
 
-    const headerHeight = scrollY.interpolate({
-        inputRange: [0, MAX_HEADER_HEIGHT - MIN_HEADER_HEIGHT],
-        outputRange: [MAX_HEADER_HEIGHT, MIN_HEADER_HEIGHT],
-        extrapolate: "clamp",
-    });
+interface combineProps extends HomeScreenProps {
+  route: HomeScreenRouteProp;
+}
 
-    const borderRadius = scrollY.interpolate({
-        inputRange: [0, MAX_HEADER_HEIGHT - MIN_HEADER_HEIGHT],
-        outputRange: [50, 0],
-        extrapolate: "clamp",
-    });
+export function HomeScreen({ navigation, route }: combineProps) {
+  const theme = useTheme();
+  const [user, setUser] = useState<User | null>(null);
 
-    return (
-        <Container>
-            <AnimatedHeader
-                style={{
-                    height: headerHeight,
-                    borderBottomLeftRadius: borderRadius,
-                    borderBottomRightRadius: borderRadius,
-                    backgroundColor: theme.COLORS.MIDNIGHT_BLUE,
-                }}
-            >
-                <Logo source={require('../../assets/Logo-zeladoria-senac.png')} />
-            </AnimatedHeader>
+  useEffect(() => {
+    const loadUserData = async () => {
+      let currentUser = route.params?.user;
 
-            <Animated.ScrollView
-                contentContainerStyle={{ paddingTop: MAX_HEADER_HEIGHT, paddingHorizontal: 10 }}
-                scrollEventThrottle={16}
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-            >
-              <ViewWhate>
+      if (!currentUser) {
+        const userDataString = await AsyncStorage.getItem("userData");
+        if (userDataString) {
+          currentUser = JSON.parse(userDataString);
+        }
+      }
 
-                <ButtonWrapper>
-                    <ButtonHome
-                        icon="meeting-room"
-                        title="Salas"
-                        onPress={() => navigation.navigate("rooms")}
-                    />
-                    <ButtonHome
-                        icon="person-outline"
-                        title="Usuário"
-                        onPress={() => navigation.navigate("profile")}
-                        />
-                </ButtonWrapper>
-                        </ViewWhate>
-            </Animated.ScrollView>
-        </Container>
-    );
+      setUser(currentUser);
+    };
+    loadUserData();
+  }, [route.params?.user]);
+
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
+    navigation.replace("Login");
+  };
+
+  const userAdmin = user?.is_staff || user?.is_superuser;
+
+  return (
+    <Container theme={theme}>
+      <Header title="Home" showBackButton={false} />
+      <ViewWhate>
+        <ButtonWrapper>
+          <ButtonHome
+            icon="meeting-room"
+            title="Salas"
+            onPress={() => navigation.navigate("Rooms", { user: user as User })}
+          />
+
+          <ButtonHome
+            icon="person-outline"
+            title="Usuário"
+            onPress={() => navigation.navigate("Profile")}
+          />
+
+          {userAdmin && (
+            <ButtonHome
+              icon="person-add-alt-1"
+              title="Cadastrar Usuário"
+              onPress={() => navigation.navigate("CreateUser")}
+            />
+          )}
+
+          <ButtonHome icon="logout" title="Sair" onPress={handleLogout} />
+          {userAdmin && (
+            <ButtonHome
+              icon="person-outline"
+              title="Usuarios"
+              onPress={() => navigation.navigate("UserList")}
+            />
+          )}
+        </ButtonWrapper>
+      </ViewWhate>
+    </Container>
+  );
 }
