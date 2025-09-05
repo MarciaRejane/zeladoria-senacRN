@@ -1,5 +1,5 @@
 import React from "react";
-import { ButtonContainer, ButtonText } from "./styles"; 
+import { ButtonContainer, ButtonText } from "./styles";
 import { MaterialIcons } from "@expo/vector-icons";
 
 interface ButtonHomeProps {
@@ -8,8 +8,8 @@ interface ButtonHomeProps {
   onPress: () => void;
 }
 
-export const ButtonHome: React.FC<ButtonHomeProps> = ({title, icon, onPress}) => {
-  return(
+export const ButtonHome: React.FC<ButtonHomeProps> = ({ title, icon, onPress }) => {
+  return (
     <ButtonContainer onPress={onPress}>
       <MaterialIcons
         name={icon}
@@ -19,7 +19,7 @@ export const ButtonHome: React.FC<ButtonHomeProps> = ({title, icon, onPress}) =>
       <ButtonText>
         {title}
       </ButtonText>
-      
+
     </ButtonContainer>
   )
 }
