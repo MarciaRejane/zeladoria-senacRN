@@ -15,11 +15,19 @@ export const Container = styled.View`
   background-color: ${({ theme }) => theme.COLORS.WHITE};
 `;
 
+export const Content = styled.View`
+  flex: 1;
+  padding: 20px;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ theme }) => theme.COLORS.ICE_BLUE};
+`;
+
 export const ViewFilter = styled(View)`
   flex-direction: row;
-  width: 95%;
+  width: 100%;
   height: 65px;
-  justify-content: space-around;
+  justify-content: center;
   margin-top: 20px;
   border-radius: 10px;
   border-color: ${({ theme }) => theme.COLORS.MIDNIGHT_BLUE};
@@ -28,23 +36,16 @@ export const ViewFilter = styled(View)`
   background-color: ${({ theme }) => theme.COLORS.LIGHTER_DARK_BLUE};
 `;
 
-export const Content = styled.View`
-  flex-direction: column;
-  align-items: center;
-`;
-
 export const Title = styled(Text)`
   font-size: 24px;
   font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
   color: ${({ theme }) => theme.COLORS.DARK_BLUE};
 
-  text-align: center;
+  align-items: center;
 `;
 
 export const FlatList = styled.FlatList.attrs({
-  contentContainerStyle: {
-    // paddingHorizontal: 20,
-  },
+  contentContainerStyle: {},
 })`
   flex: 1;
 `;
@@ -54,6 +55,8 @@ export const FilterButton = styled(TouchableOpacity)<FilterProps>`
   padding: 10px;
   border-radius: 10px;
   flex-direction: row;
+  align-items: center;
+  justify-content: center;
   align-items: center;
 
   overflow: hidden;
@@ -71,10 +74,11 @@ export const FilterText = styled(Text)<FilterTextProps>`
 export const CreateButton = styled.TouchableOpacity`
   padding: 15px;
   align-items: center;
-  width: 55%;
+  width: 100%;
   border-radius: 10px;
   background-color: ${({ theme }) => theme.COLORS.LIGHTER_DARK_BLUE};
   margin: 5px;
+  margin-bottom: 20px;
 `;
 
 export const TitleCreate = styled.Text`

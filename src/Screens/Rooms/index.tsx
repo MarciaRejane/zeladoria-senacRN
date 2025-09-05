@@ -85,12 +85,12 @@ export function RoomsScreen({ navigation, route }: RoomsScreenProps) {
                     </FilterButton>
                     <FilterButton isActive={activeFilter === "clean"} onPress={() => setActiveFilter("clean")}>
                         <FilterText isActive={activeFilter === "clean"}>
-                            Salas Limpas
+                            Limpas
                         </FilterText>
                     </FilterButton>
                     <FilterButton isActive={activeFilter === "pending"} onPress={() => setActiveFilter("pending")}>
                         <FilterText isActive={activeFilter === "pending"}>
-                            Salas Pendentes
+                            Pendentes
                         </FilterText>
                     </FilterButton>
                 </ViewFilter>
@@ -110,6 +110,7 @@ export function RoomsScreen({ navigation, route }: RoomsScreenProps) {
                             user={user}
                             onDeleteSuccess={handleSalaDeleted}
                         />
+
                     )}
                 />
             </Content>
