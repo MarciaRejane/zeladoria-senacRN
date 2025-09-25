@@ -12,6 +12,7 @@ export default {
     DEEP_TEAL: "#06777F",//Verde
     VIBRANT_RED: "#FC4629",//vermelho
     ICE_BLUE: "#EFF7FF",
+    neutralLight: "#F5F5F5",
 
     PURPLE: "#9804DD",
 
