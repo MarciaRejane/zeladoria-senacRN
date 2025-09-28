@@ -10,7 +10,7 @@ export const Contant = styled.View`
 
 export const ViewGray = styled.View`
   width: 100%;
-  height: 270;
+  height: 270px;
   background-color: ${({ theme }) => theme.COLORS.LIGHT_GRAY};
   justify-content: center;
   align-items: center;
