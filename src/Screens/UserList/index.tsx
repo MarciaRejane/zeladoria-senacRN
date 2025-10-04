@@ -1,91 +1,201 @@
-import React, { useState, useEffect } from "react";
-import { FlatList, Alert, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { FlatList, Alert, ActivityIndicator, View } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../App";
 import { accounts, User } from "../../services/api";
+import { Container, Contant, UserItemContainer, UserRoleText, UsernameText, FilterButton, FilterText, FlatListText, NewUserButton, NewUserButtonText, ViewFilter, ViwBlue } from './styles';
 import { Header } from "../../components/Header";
-import { Container, FilterButton, FilterText, UserItemContainer, UserRoleText, UsernameText, View } from './styles';
+import { SearchInput } from "../../components/SearchInput";
 import theme from "../../theme";
+//Hook que executa quando a tela entra em foco
+import { useFocusEffect } from "@react-navigation/native";
+import { PlusCircleIcon } from "phosphor-react-native";
 
+//Tipagem de navegação para essa tela
 type UserListScreenProps = NativeStackScreenProps<RootStackParamList, 'UserList'>;
+
+//Tipagem dos filtros de usuário
+type UserFilter = 'admin' | 'zeladoria' | 'colaborador';
+
+//Tempo de espera para busca
+const SEARCH_DELAY_MS = 500;
+//Lista de todos os filtros que tem na tela
+const ALL_FILTERS: UserFilter[] = ['admin', 'zeladoria', 'colaborador'];
 
 export function UserListScreen({ navigation }: UserListScreenProps) {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'admin' | 'collaborador'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [activeFilter, setActiveFilter] = useState<UserFilter>('admin');//filtro ativo
 
+  const renderUserRole = (user: User) => {
+    if (user.is_superuser) return 'Super Admin';
+    if (user.groups && user.groups.includes(1)) return 'Zeladoria';
+    if (user.groups && user.groups.includes(2)) return 'Colaborador';
+    if (user.is_staff) return 'Admin (Staff)';
+    return 'Colaborador';
+  };
 
-
+  //Debounce para pesquisa, espera o usuário parar de digitar
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await accounts.listUsers();
-        setUsers(response.data);
-        setFilteredUsers(response.data);
-      } catch (error) {
-        console.error("Erro ao carregar usuários", error);
-        Alert.alert('Erro', 'Não foi possivel carrgar a lista de usuários.');
-      } finally {
-        setLoading(false);
-      }
+    const timerId = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, SEARCH_DELAY_MS);
+
+    return () => {
+      clearTimeout(timerId);
     };
-    fetchUsers();
+  }, [searchTerm]);
+
+
+  //Chama a API e aplica os filtros de busca e papel
+  const fetchUsers = useCallback(async (query: string, currentActiveFilter: UserFilter) => {
+    setLoading(true);
+
+    try {
+      //chama a API para listar os usuários
+      const apiResponse = await accounts.listUsers({ username: query });
+      const queryLower = query.toLowerCase();
+
+      const filteredLocally = apiResponse.data.filter(user => {
+        const userRole = renderUserRole(user);
+
+        let matchesRole = false;
+
+        if (currentActiveFilter === 'admin') {
+          if (userRole === 'Super Admin' || userRole === 'Admin (Staff)') {
+            matchesRole = true;
+          }
+        } else if (currentActiveFilter === 'zeladoria') {
+
+          if (userRole === 'Zeladoria') {
+            matchesRole = true;
+          }
+        } else if (currentActiveFilter === 'colaborador') {
+
+          if (userRole === 'Colaborador') {
+            matchesRole = true;
+          }
+        }
+
+        //Filtro de busca por nome
+        const matchesQuery = query === '' || user.username.toLowerCase().includes(queryLower);
+
+        return matchesRole && matchesQuery;
+      });
+
+      setUsers(filteredLocally); //Salva os usuários filtrados
+
+    } catch (error) {
+      console.error("Erro ao carregar usuários:", error);
+      Alert.alert('Erro', 'Não foi possível carregar a lista de usuários.');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+
+  //Chama a API sempre que mudar a busca ou filtro 
   useEffect(() => {
-    let list = users;
-    if (activeFilter === 'admin') {
-      list = users.filter(user => user.is_staff || user.is_superuser);
-    } else if (activeFilter === 'collaborador') {
-      list = users.filter(user => !user.is_staff && !user.is_superuser);
-    }
-    setFilteredUsers(list);
-  }, [activeFilter, users]);
+    fetchUsers(debouncedSearchTerm, activeFilter);
+  }, [debouncedSearchTerm, activeFilter, fetchUsers]);
 
 
-  const renderUsrItem = ({ item }: { item: User }) => (
-    <UserItemContainer>
+  //Recarrega a lista quando a tela entra em foco
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsers(debouncedSearchTerm, activeFilter);
+    }, [fetchUsers, debouncedSearchTerm, activeFilter])
+  );
+
+  //Atualiza o termo de pesquisa
+  const handleSearch = (text: string) => {
+    setSearchTerm(text);
+  };
+
+  //Renderiza cada item da lista
+  const renderUserItem = ({ item }: { item: User }) => (
+    <UserItemContainer
+      onPress={() => navigation.navigate('EditUser', { userId: item.id })}
+    >
       <UsernameText>{item.username}</UsernameText>
       <UserRoleText>
-        {item.is_superuser ? 'Super Admin' : (item.is_staff ? 'Admin' : 'Colaborador')}
+        {renderUserRole(item)}
       </UserRoleText>
     </UserItemContainer>
   );
 
-  if (loading) {
+  if (loading && users.length === 0) {
     return (
-      <Container>
+      <Container style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color={theme.COLORS.BLACK} />
       </Container>
     );
   }
 
+  //Texto do placeholder muda conforme o filtro que esta clicado
+  const placeholderText = activeFilter === 'admin'
+    ? 'Buscar Usuário em "Admin"'
+    : `Buscar Usuário em "${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)}"`;
 
   return (
     <Container>
-
-
-      <View>
-        <FilterButton onPress={() => setActiveFilter('all')}>
-          <FilterText>Todos</FilterText>
-        </FilterButton>
-
-        <FilterButton onPress={() => setActiveFilter('admin')}>
-          <FilterText>Admin</FilterText>
-        </FilterButton>
-
-        <FilterButton onPress={() => setActiveFilter('collaborador')}>
-          <FilterText>Colaborador</FilterText>
-        </FilterButton>
-      </View>
-
-      <FlatList
-        data={filteredUsers}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderUsrItem}
+      <Header
+        title="Lista de Usuários"
+        showBackButton={true}
       />
-    </Container>
-  )
-}
 
+      <Contant>
+
+        <SearchInput
+          placeholder={placeholderText}
+          placeholderTextColor={theme.COLORS.MEDIUM_GRAY}
+          onChangeText={handleSearch}
+          value={searchTerm}
+        />
+
+        <NewUserButton onPress={() => navigation.navigate('CreateUser')}>
+          <PlusCircleIcon size={24} color={theme.COLORS.DARK_BLUE} weight="fill" />
+          <NewUserButtonText>Novo Usuário</NewUserButtonText>
+        </NewUserButton>
+
+        <ViwBlue>
+          <ViewFilter>
+            {ALL_FILTERS.map((role) => (
+              <FilterButton
+                key={role}
+                isActive={activeFilter === role}
+                onPress={() => {
+                  setActiveFilter(role);
+                  setSearchTerm('');
+                }}
+              >
+                <FilterText isActive={activeFilter === role}>
+                  {role.charAt(0).toUpperCase() + role.slice(1)}
+                </FilterText>
+              </FilterButton>
+            ))}
+          </ViewFilter>
+
+          {loading && users.length > 0 ? (
+            <View style={{ padding: 20 }}>
+              <ActivityIndicator size="small" color={theme.COLORS.DARK_BLUE} />
+            </View>
+          ) : (
+            <FlatList
+              data={users}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderUserItem}
+              ListEmptyComponent={() => (
+                <FlatListText>
+                  Nenhum usuário encontrado na categoria "{activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)}".
+                </FlatListText>
+              )}
+            />
+          )}
+        </ViwBlue>
+      </Contant>
+    </Container>
+  );
+}
