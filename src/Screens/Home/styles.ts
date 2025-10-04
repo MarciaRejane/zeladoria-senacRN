@@ -6,9 +6,10 @@ export const Container = styled.View`
   background-color: ${({ theme }) => theme.COLORS.WHITE};
 `;
 
-export const Title = styled.Text`
-  font-size: 16;
-  font-family: ${theme.FONT_FAMILY.BOLD};
+export const Contant = styled.View`
+  height: 90%;
+  background-color: ${({ theme }) => theme.COLORS.neutralLight};
+  padding: 16px;
 `;
 
 export const ViewWhate = styled.View`
