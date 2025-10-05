@@ -23,23 +23,35 @@ export interface LoginResponse {
   user_data: User;
 }
 
+export interface DetalhesSuja {
+  data_hora: string;
+  reportado_por: string;
+  observacoes: string;
+}
+
+export interface FotoLimpeza {
+  id: number;
+  imagem: string;
+  timestamp: string;
+}
+
 //Extrutura de uma sala
 export interface Sala {
   id: number;
+  qr_code_id: string;
   nome_numero: string;
+  imagem: string | null;
   capacidade: number;
-  descricao: string;
+  validade_limpeza_horas: number;
+  descricao: string | null;
+  instrucoes: string | null;
   localizacao: string;
-  status_limpeza: "Limpa" | "Limpeza Pendente";
+  ativa: boolean;
+  responsaveis: string[];
+  status_limpeza: "Limpa" | "Limpeza Pendente" | "Suja" | "Em Limpeza";
   ultima_limpeza_data_hora: string | null;
   ultima_limpeza_funcionario: string | null;
-  ultima_limpeza_duracao_minutos?: number;
-  qr_code_id: string;
-  imagem?: string;
-  responsaveis?: string[];
-  validade_limpeza_horas?: number;
-  instrucoes?: string;
-  ativa: boolean;
+  detalhes_suja: DetalhesSuja | null;
 }
 
 export interface CreateSalaData {
@@ -55,16 +67,9 @@ export interface LimpezaRegistro {
   sala_nome: string;
   data_hora_inicio: string;
   data_hora_fim: string | null;
-  funcionario_responsavel: {
-    id: number;
-    username: string;
-  };
-  observacoes: string;
-  foto: {
-    id: number;
-    imagem: string;
-    timeStamp: string;
-  }[];
+  funcionario_responsavel: string;
+  observacoes: string | null;
+  fotos: FotoLimpeza[];
 }
 
 export interface CreateUserData {
@@ -165,12 +170,17 @@ export const salas = {
   },
 
   //Detalhes da sala pelo QR Code
-  getDetails: (qr_code_id: string) => api.get<Sala>(`salas/${qr_code_id}`),
+  getDetails: (qr_code_id: string) => api.get<Sala>(`salas/${qr_code_id}/`),
 
   //Atualizar sala
   update: (qr_code_id: string, data: FormData) =>
-    api.put<Sala>(`sala/${qr_code_id}/`, data, {
+    api.put<Sala>(`salas/${qr_code_id}/`, data, {
       headers: { "Content-Type": "multipart/form-data" },
+    }),
+
+  patch: (qr_code_id: string, data: FormData) =>
+    api.patch<Sala>(`salas/${qr_code_id}/`, data, {
+      headers: { "Content-type": "multipart/form-data" },
     }),
 
   delete: (qr_code_id: string) => api.delete(`salas/${qr_code_id}`),
@@ -187,7 +197,7 @@ export const salas = {
 
   //Marcar como suja
   marckAsDirty: (qr_code_id: string, observacoes?: string) =>
-    api.post(`salas/${qr_code_id}/marcar_como_suja`, {
+    api.post(`salas/${qr_code_id}/marcar_como_suja/`, {
       observacoes,
     }),
 };
@@ -208,10 +218,10 @@ export const fotos = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
 
-  listPhoto: () => api.get("fotos_limpeza/"),
+  listPhoto: () => api.get<FotoLimpeza[]>("fotos_limpeza/"),
 
-  getPhoto: (id: number) => api.get(`fotos_limpeza/${id}/`),
-  deletePhoto: (id: number) => api.delete(`foto_limpeza/${id}`),
+  getPhoto: (id: number) => api.get<FotoLimpeza>(`fotos_limpeza/${id}/`),
+  deletePhoto: (id: number) => api.delete(`fotos_limpeza/${id}/`),
 };
 
 export const notificacoes = {
