@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Contant, Title, AdminInputs, RoleSelector, RoleButton, RoleText } from "./styles";
+import { Container, Contant, AdminInputs, RoleSelector, RoleButton, RoleText } from "./styles";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { accounts, CreateUserData } from "../../services/api";
 import { RootStackParamList } from "../../../App";
@@ -7,7 +7,7 @@ import { Input } from "../../components/Inputs";
 import { ButtonLogin } from "../../components/ButtonLogin";
 import theme from "../../theme";
 import { Alert } from "react-native";
-import { ViewGray } from "../Login/styles";
+import { Header } from "../../components/Header";
 
 type CreateUserScreenProps = NativeStackScreenProps<RootStackParamList, 'CreateUser'>;
 //Tipos de função dos usuários
@@ -97,20 +97,22 @@ export function CreateUserScreen({ navigation }: CreateUserScreenProps) {
 
     return (
         <Container theme={theme}>
+            <Header
+                title="Novo Usuários"
+                showBackButton
+            />
             <Contant>
-                <ViewGray>
-                    <Title>Cadastro usuários</Title>
-                </ViewGray>
-
                 <AdminInputs>
                     <Input
                         placeholder="Nome do usuário"
+                        placeholderTextColor={theme.COLORS.DARK_BLUE}
                         value={username}
                         onChangeText={setUsername}
                     />
 
                     <Input
                         placeholder="Email "
+                        placeholderTextColor={theme.COLORS.DARK_BLUE}
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
@@ -119,6 +121,7 @@ export function CreateUserScreen({ navigation }: CreateUserScreenProps) {
 
                     <Input
                         placeholder="Senha"
+                        placeholderTextColor={theme.COLORS.DARK_BLUE}
                         secureTextEntry={true}
                         value={password}
                         onChangeText={setPassword}
@@ -126,12 +129,12 @@ export function CreateUserScreen({ navigation }: CreateUserScreenProps) {
 
                     <Input
                         placeholder="Confirmar senha"
+                        placeholderTextColor={theme.COLORS.DARK_BLUE}
                         secureTextEntry={true}
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
                     />
                 </AdminInputs>
-
 
                 <RoleSelector>
                     <RoleButton

@@ -8,32 +8,22 @@ interface RoleButtonProps {
 
 export const Container = styled.View`
   flex: 1;
-  align-items: center;
   background-color: ${({ theme }) => theme.COLORS.WHITE};
+  margin-bottom: 60px;
 `;
 
 export const Contant = styled.View`
-  margin-top: 20px;
-  border-radius: 20px;
   justify-content: center;
   width: 100%;
-  height: 80%;
+  height: 85%;
   align-items: center;
-  background-color: ${({ theme }) => theme.COLORS.WHITE};
-`;
-
-export const Title = styled.Text`
-  color: ${({ theme }) => theme.COLORS.DARK_BLUE};
-  font-size: 30px;
-  font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
-  margin-top: 20%;
-  font-weight: 600;
+  background-color: ${({ theme }) => theme.COLORS.neutralLight};
 `;
 
 export const AdminInputs = styled.View`
   flex-direction: column;
   justify-content: center;
-  margin-top: 10px;
+  margin-bottom: 20px;
 `;
 
 export const RoleSelector = styled.View`
